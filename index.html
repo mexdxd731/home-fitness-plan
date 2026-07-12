@@ -35,6 +35,12 @@
   }
   .equipment-row { margin-top: 14px; }
   .equipment-row .label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .reset-row { margin-top: 14px; display: flex; justify-content: flex-start; }
+  .reset-btn {
+    background: var(--red); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; cursor: pointer; transition: opacity .15s;
+  }
+  .reset-btn:active { opacity: .7; }
 
   /* Weight Tracker */
   .weight-tracker {
@@ -204,6 +210,9 @@
       <span class="equipment-tag">可调哑铃 ×2（5-10kg/只）</span>
       <span class="equipment-tag">健身椅</span>
       <span class="equipment-tag">俯卧撑板</span>
+    </div>
+    <div class="reset-row">
+      <button class="reset-btn" id="resetChecksBtn">清除全部打勾</button>
     </div>
   </div>
 
@@ -425,6 +434,19 @@ function attachHandlers() {
     el.onclick = () => startTimer(parseInt(el.dataset.rest) || 60);
   });
 }
+
+// ====== Reset checks ======
+document.getElementById("resetChecksBtn").onclick = () => {
+  if (!confirm("确定清除全部训练打勾记录吗？")) return;
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.match(/^d\d+_ex\d+_s\d+$/)) keys.push(k);
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+  document.querySelectorAll(".set-check").forEach(el => el.classList.remove("done"));
+  if (navigator.vibrate) navigator.vibrate(50);
+};
 
 // ====== Timer ======
 const overlay = document.getElementById("timerOverlay");
