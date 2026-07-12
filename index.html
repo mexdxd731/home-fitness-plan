@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>居家增肌训练计划</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0f1216; --card: #1a1f26; --card2: #222831; --border: #2d3540;
+    --text: #e8edf2; --text2: #9ca6b0; --accent: #ff6b35; --accent2: #4ecdc4;
+    --green: #51cf66; --red: #ff6b6b; --yellow: #ffd43b;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 40px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+
+  /* Header / Profile */
+  .header {
+    background: linear-gradient(135deg, #1e2a35, #16202a);
+    border-radius: 14px; padding: 22px; margin-bottom: 16px; border: 1px solid var(--border);
+  }
+  .header h1 { font-size: 22px; margin-bottom: 4px; }
+  .header .sub { color: var(--text2); font-size: 13px; margin-bottom: 16px; }
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 10px; }
+  .info-item { background: var(--card); border-radius: 8px; padding: 12px; text-align: center; }
+  .info-item .label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .info-item .value { font-size: 18px; font-weight: 700; }
+  .info-item . bmi-low { color: var(--yellow); }
+  .equipment-tag {
+    display: inline-block; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px; font-size: 12px; margin: 4px 4px 0 0; color: var(--accent2);
+  }
+  .equipment-row { margin-top: 14px; }
+  .equipment-row .label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+
+  /* Weight Tracker */
+  .weight-tracker {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px;
+  }
+  .wt-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .wt-title { font-size: 16px; font-weight: 700; }
+  .wt-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .wt-date {
+    background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; color-scheme: dark;
+  }
+  .wt-input {
+    width: 90px; background: var(--card2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 8px 10px; font-size: 14px; text-align: center;
+  }
+  .wt-input::placeholder { color: #555; }
+  .wt-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 18px; font-size: 14px; cursor: pointer; transition: opacity .15s;
+  }
+  .wt-btn:active { opacity: .7; }
+  .wt-chart-wrap { width: 100%; overflow-x: auto; margin-top: 8px; }
+  .wt-chart { display: block; }
+  .wt-empty { color: var(--text2); font-size: 13px; text-align: center; padding: 30px 10px; }
+  .wt-clear {
+    background: transparent; border: 1px solid var(--border); color: var(--text2); border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: auto;
+  }
+  .wt-clear:active { opacity: .7; }
+
+  /* Day Tabs */
+  .day-tabs {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 14px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .day-tab {
+    flex: 0 0 auto; background: var(--card); border: 1px solid var(--border); color: var(--text2);
+    border-radius: 10px; padding: 12px 16px; cursor: pointer; text-align: center; min-width: 80px;
+    transition: all .15s; font-size: 13px;
+  }
+  .day-tab .day-num { font-weight: 700; font-size: 15px; }
+  .day-tab .day-part { font-size: 11px; margin-top: 2px; }
+  .day-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .day-tab.rest { color: var(--accent2); }
+
+  /* Section Title */
+  .day-title {
+    font-size: 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .day-title .badge {
+    font-size: 12px; background: var(--accent); color: #fff; padding: 3px 10px; border-radius: 20px; font-weight: 600;
+  }
+  .day-title .badge.rest { background: var(--accent2); }
+
+  /* Exercise Cards */
+  .exercise-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+  .ex-name { font-size: 16px; font-weight: 700; }
+  .ex-muscle { font-size: 12px; color: var(--accent2); }
+  .ex-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+  .ex-meta span {
+    background: var(--card2); border-radius: 6px; padding: 3px 8px; color: var(--text2);
+  }
+  .ex-meta span.weight { color: var(--accent); }
+  .ex-tips {
+    margin-top: 10px; padding: 10px; background: var(--card2); border-radius: 8px;
+    font-size: 13px; color: var(--text2); border-left: 3px solid var(--accent2);
+  }
+  .ex-tips .tip-label { color: var(--accent2); font-weight: 600; }
+  .ex-sets { margin-top: 12px; }
+  .set-row {
+    display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px dashed var(--border);
+  }
+  .set-row:first-child { border-top: none; }
+  .set-check {
+    width: 22px; height: 22px; border: 2px solid var(--border); border-radius: 6px;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; font-size: 12px; color: transparent;
+  }
+  .set-check.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .set-info { font-size: 13px; color: var(--text2); flex: 1; }
+  .set-info strong { color: var(--text); }
+  .start-timer-btn {
+    margin-left: auto; background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 5px 12px; font-size: 12px; cursor: pointer; transition: opacity .15s; white-space: nowrap;
+  }
+  .start-timer-btn:active { opacity: .7; }
+
+  /* Timer Modal */
+  .timer-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100;
+    justify-content: center; align-items: center; text-align: center;
+  }
+  .timer-overlay.show { display: flex; }
+  .timer-box { padding: 40px; }
+  .timer-ring {
+    width: 200px; height: 200px; border-radius: 50%; border: 8px solid var(--card2); margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .timer-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+  .timer-ring svg circle { fill: none; stroke: var(--accent); stroke-width: 8; transition: stroke-dashoffset 1s linear; }
+  .timer-display { position: relative; z-index: 1; font-size: 48px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .timer-label { color: var(--text2); font-size: 14px; }
+  .timer-controls { margin-top: 24px; }
+  .timer-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 10px;
+    padding: 12px 24px; font-size: 14px; cursor: pointer; margin: 0 6px; transition: all .15s;
+  }
+  .timer-btn:active { transform: scale(.96); }
+  .timer-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .timer-skip { background: var(--green); border-color: var(--green); }
+
+  /* Rest Day */
+  .rest-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 30px; text-align: center;
+  }
+  .rest-card .icon { font-size: 48px; margin-bottom: 12px; }
+  .rest-card h3 { font-size: 18px; margin-bottom: 8px; }
+  .rest-card p { color: var(--text2); font-size: 14px; max-width: 420px; margin: 0 auto; }
+  .stretch-list { text-align: left; max-width: 420px; margin: 18px auto 0; }
+  .stretch-list li { list-style: none; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 14px; color: var(--text2); }
+  .stretch-list li:last-child { border: none; }
+
+  * { -webkit-tap-highlight-color: transparent; }
+  button, .set-check, .day-tab { touch-action: manipulation; }
+
+  @media (max-width: 600px) {
+    .container { padding: 10px; }
+    .header { padding: 16px; }
+    .header h1 { font-size: 18px; }
+    .info-grid { grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .info-item { padding: 10px 6px; }
+    .info-item .label { font-size: 10px; }
+    .info-item .value { font-size: 14px; }
+    .day-tab { min-width: 68px; padding: 10px 12px; }
+    .day-tab .day-num { font-size: 14px; }
+    .exercise-card { padding: 12px; }
+    .ex-name { font-size: 15px; }
+    .ex-tips { font-size: 12px; padding: 8px; }
+    .set-check { width: 28px; height: 28px; font-size: 14px; }
+    .set-row { padding: 10px 0; }
+    .start-timer-btn { padding: 8px 14px; font-size: 13px; }
+    .timer-overlay { padding: 16px; }
+    .timer-ring { width: 180px; height: 180px; }
+    .timer-display { font-size: 42px; }
+    .timer-btn { padding: 12px 18px; margin: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Profile -->
+  <div class="header">
+    <h1>居家增肌训练计划</h1>
+    <div class="sub">基于现有器械的科学分化训练 · 6天训练 / 1天休息</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="label">身高</div><div class="value">185 cm</div></div>
+      <div class="info-item"><div class="label">当前体重</div><div class="value" id="currentWeightDisplay">57.5 kg</div></div>
+      <div class="info-item"><div class="label">BMI</div><div class="value" id="bmiDisplay" style="color:var(--yellow)">16.8</div></div>
+      <div class="info-item"><div class="label">目标</div><div class="value" style="color:var(--accent);font-size:15px">增肌增重</div></div>
+    </div>
+    <div class="equipment-row">
+      <div class="label">现有器械</div>
+      <span class="equipment-tag">可调哑铃 ×2（5-10kg/只）</span>
+      <span class="equipment-tag">健身椅</span>
+      <span class="equipment-tag">俯卧撑板</span>
+    </div>
+  </div>
+
+  <!-- Weight Tracker -->
+  <div class="weight-tracker">
+    <div class="wt-head">
+      <div class="wt-title">体重趋势</div>
+      <div class="wt-input-row">
+        <input type="date" class="wt-date" id="wtDate"/>
+        <input type="number" class="wt-input" id="wtInput" step="0.1" placeholder="kg"/>
+        <button class="wt-btn" id="wtAddBtn">记录</button>
+        <button class="wt-clear" id="wtClearBtn">清空</button>
+      </div>
+    </div>
+    <div class="wt-chart-wrap">
+      <svg class="wt-chart" id="wtChart" width="900" height="220" viewBox="0 0 900 220"></svg>
+    </div>
+    <div class="wt-empty" id="wtEmpty">暂无记录，输入今天体重开始追踪吧</div>
+  </div>
+
+  <!-- Day tabs -->
+  <div class="day-tabs" id="dayTabs"></div>
+
+  <!-- Content -->
+  <div id="content"></div>
+</div>
+
+<!-- Timer overlay -->
+<div class="timer-overlay" id="timerOverlay">
+  <div class="timer-box">
+    <div class="timer-ring">
+      <svg width="200" height="200" id="timerSvg"><circle cx="100" cy="100" r="92" id="timerCircle"/></svg>
+      <div class="timer-display" id="timerDisplay">01:30</div>
+    </div>
+    <div class="timer-label">组间休息</div>
+    <div class="timer-controls">
+      <button class="timer-btn" id="btnAdd30">+30s</button>
+      <button class="timer-btn timer-skip" id="btnSkip">跳过</button>
+      <button class="timer-btn primary" id="btnClose">完成</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== Data ======
+const DAYS = [
+  { day:1, part:"推", title:"胸 + 肩前束 + 三头", badge:"Day 1 · 推" },
+  { day:2, part:"拉", title:"背 + 后束 + 二头", badge:"Day 2 · 拉" },
+  { day:3, part:"腿", title:"股四头 + 臀 + 腿后束 + 核心", badge:"Day 3 · 腿" },
+  { day:4, part:"推", title:"胸 + 肩 + 三头（容量提升）", badge:"Day 4 · 推" },
+  { day:5, part:"拉", title:"背 + 后束 + 二头（进阶）", badge:"Day 5 · 拉" },
+  { day:6, part:"腿", title:"腿 + 臀 + 核心（增量）", badge:"Day 6 · 腿" },
+  { day:7, part:"休息", title:"主动恢复", badge:"Day 7 · 休息", rest:true },
+];
+
+const EX = {
+  1: [
+    { name:"哑铃卧推", m:"胸大肌 · 前束", eq:"哑铃+健身椅", sets:4, reps:"8-12", w:"8-10kg/只", rest:65,
+      tips:"仰卧健身椅，双脚踏实地面，核心收紧。哑铃从胸两侧向上推至手臂自然伸直（不锁死），下落至胸部水平。注意肩胛骨后缩下沉，不要耸肩。凳上角度可调，平凳练中胸，微上斜练上胸。" },
+    { name:"哑铃飞鸟", m:"胸大肌", eq:"哑铃+健身椅", sets:3, reps:"10-15", w:"5-8kg/只", rest:35,
+      tips:"仰卧平凳，哑铃在胸前上方微屈臂。双臂向两侧弧形打开至胸肌充分拉伸（肘略低于肩），再弧形合拢。保持肘部固定微屈角度不变，想象'抱树'的弧线。控制速度，下放2秒，上合1秒。" },
+    { name:"俯卧撑板多角度", m:"胸大肌 · 三角肌前束 · 三头", eq:"俯卧撑板", sets:3, reps:"力竭", rest:50,
+      tips:"俯卧撑板可调节把手位置：宽距主练胸外沿，窄距主练胸内侧和三头，中距均衡。身体保持一条直线，核心和臀夹紧。下放至胸离板约一拳，推起到顶不锁死。每组做到接近力竭（留1-2次的余量）。" },
+    { name:"哑铃坐姿肩推", m:"三角肌前束 · 三头", eq:"哑铃+健身椅", sets:4, reps:"8-12", w:"7-10kg/只", rest:50,
+      tips:"坐于健身椅（靠背竖直），双脚踩实。哑铃在肩两侧，掌心相对或朝前均可。向上推至头顶上方手臂微屈，下落至哑铃与肩齐平。核心始终收紧，下背不要过度反弓。肩胛骨在推到顶时向上旋，下落时回缩。" },
+    { name:"哑铃颈后臂屈伸", m:"肱三头肌", eq:"哑铃", sets:3, reps:"10-15", w:"5-8kg（双手共握一只）", rest:35,
+      tips:"双手托住一只哑铃顶端，举过头顶。肘部贴近头部两侧不动，仅小臂弯曲将哑铃下放至颈后，再伸直。保持肘部不外翻、不前后晃动。这个动作行程长，注意下放时缓慢离心控制2秒。" },
+  ],
+  2: [
+    { name:"哑铃单臂划船", m:"背阔肌 · 中背", eq:"哑铃+健身椅", sets:4, reps:"8-12", w:"8-12kg/只", rest:50,
+      tips:"单膝单手撑在健身椅上，另一侧脚踩地。背部平直，手持哑铃自然下垂。将哑铃沿体侧向后上方拉至腰腹高度（想象肘部往天花板走），在顶点挤压肩胛骨1秒。下放充分拉伸背阔肌。每组换边，注意不要用惯性甩起，靠背部发力。" },
+    { name:"俯身哑铃划船（双臂）", m:"背阔肌 · 中背", eq:"哑铃", sets:3, reps:"10-12", w:"10kg/只", rest:65,
+      tips:"双脚与肩同宽，屈髋微屈膝，躯干前倾约45°。背保持自然直线，哑铃在大腿前。双臂同时将哑铃拉至上腹位置，肘部高于躯干。下放时充分拉伸。比单臂划船能上更大重量，注意腰背不过度弯曲。" },
+    { name:"俯身哑铃飞鸟（后束）", m:"三角肌后束 · 中背", eq:"哑铃", sets:3, reps:"12-15", w:"5-8kg/只", rest:35,
+      tips:"俯身45°，哑铃在身前自然下垂。保持肘部微屈固定，双臂向两侧抬起至与肩齐平，想象'展翅'而不是'提肘'。在顶点挤压后束1秒。重量不必大，慢速控制，避免耸肩代偿。后束较弱，宁可轻量做标准。" },
+    { name:"哑铃弯举", m:"肱二头肌", eq:"哑铃", sets:3, reps:"10-12", w:"5-8kg/只", rest:35,
+      tips:"站姿或坐姿均可，双手持哑铃自然下垂，掌心朝前。弯举至肩部位置，顶点收缩1秒，缓慢离心下放2秒。上臂固定不动，仅小臂运动，不要身体借力甩起。可在健身椅上斜坐做更长拉伸版本。" },
+    { name:"锤式弯举", m:"肱二头肌 · 肱肌 · 前臂", eq:"哑铃", sets:3, reps:"10-12", w:"6-10kg/只", rest:35,
+      tips:"动作同弯举，但掌心相对（像握锤子）。能上比弯举略重的负荷，肱肌在拇指侧发力明显。控制2秒下放，不要快速甩。站姿双脚与肩同宽，核心收紧。" },
+  ],
+  3: [
+    { name:"哑铃高脚杯深蹲", m:"股四头肌 · 臀", eq:"哑铃", sets:4, reps:"10-15", w:"10kg（双手抱一只）", rest:65,
+      tips:"双手竖向托住一只哑铃顶端贴在胸前，双脚与肩同宽脚尖微外八。下蹲至大腿与地面平行或更低，膝盖跟随脚尖方向。保持胸口挺、哑铃不前倾。起立时臀部和大腿同时发力，顶点不锁膝。全程核心绷紧，背自然挺直。" },
+    { name:"保加利亚分腿蹲", m:"股四头肌 · 臀", eq:"哑铃+健身椅", sets:3, reps:"8-12/腿", w:"8-10kg/只", rest:50,
+      tips:"一只脚背搭在身后健身椅上，前脚向前迈一步。持哑铃自然下垂或抱胸口，下蹲至前大腿与地面平行，后膝接近地面但不着地。起身靠前腿发力。注意前膝不超脚尖过多，躯干可微前倾以增加臀肌参与。每组两腿轮换。" },
+    { name:"哑铃罗马尼亚硬拉", m:"腿后束 · 臀 · 下背", eq:"哑铃", sets:3, reps:"10-12", w:"10kg/只", rest:65,
+      tips:"双脚与肩同宽，双手持哑铃在大腿前。屈髋向后送臀，躯干前倾，膝关节微屈不变。哑铃沿大腿前下放至小腿中段（感受腿后束拉伸），再臀部前推站起。全程背保持自然直线，重心在脚跟。这是练腿后束（腘绳肌）的核心动作。" },
+    { name:"平板支撑", m:"核心", eq:"无", sets:3, reps:"30-60秒", w:"自重", rest:20,
+      tips:"前臂和脚尖支撑，身体从头到脚一条直线。臀部不塌不翘，腹部和臀部夹紧收紧。目视地面，颈部自然。初学者30秒，逐步增加。注意呼吸不要憋气。可分组做，每组接近力竭时停。" },
+  ],
+  4: [
+    { name:"哑铃卧推", m:"胸大肌", eq:"哑铃+健身椅", sets:4, reps:"8-12", w:"10kg/只", rest:65,
+      tips:"同Day1，本次可上举些重量或增加控制时间（下放3秒）。若上一组轻松完成12次，加重0.5-1kg。关注离心阶段（下放）的控制，这是肌肉破坏和增长的关键部分。" },
+    { name:"俯卧撑板（宽距+窄距）", m:"胸大肌 · 三头", eq:"俯卧撑板", sets:4, reps:"接近力竭", rest:50,
+      tips:"比Day1多一组，交替宽距和窄距各2组。宽距推到顶挤压胸肌，窄距肘部贴体侧练三头。注意窄距俯卧撑对手腕压力大，俯卧撑板把手可减少不适。做组间60-90秒休息保证质量。" },
+    { name:"哑铃侧平举", m:"三角肌中束", eq:"哑铃", sets:4, reps:"12-15", w:"5-7kg/只", rest:35,
+      tips:"站姿双脚与肩同宽，双手持哑铃在体侧。保持肘部微屈固定，双臂向两侧平举至与肩齐平（不要超过肩），在顶点停1秒后缓慢放下。全程不要耸肩、不用身体摆动借力。中束需轻量多次数，宁可放慢也不借力。" },
+    { name:"哑铃肩推", m:"三角肌前束 · 中束 · 三头", eq:"哑铃+健身椅", sets:3, reps:"8-12", w:"8-10kg/只", rest:50,
+      tips:"坐姿靠背，同Day1肩推。本次可上5%负荷，关注推到顶肩胛上旋、底部肩胛回缩的完整控制。若背靠凳不能保持竖直，减小重量。" },
+    { name:"哑铃臂屈伸", m:"肱三头肌", eq:"哑铃", sets:3, reps:"10-15", w:"5-8kg/只", rest:35,
+      tips:"弯腰俯身45°，上臂贴体侧不动，仅小臂伸向后上方。顶点充分伸直三头，收缩1秒。这个角度的三头侧重长头。注意肘不外翻，背保持平直。也可做颈后臂屈伸替代。" },
+  ],
+  5: [
+    { name:"支撑划船", m:"背阔肌 · 核心", eq:"哑铃+健身椅", sets:4, reps:"8-10/侧", w:"10-15kg/只", rest:50,
+      tips:"一只手撑在健身椅上身体前倾45°（类似单臂划船起始姿势），另一手持哑铃。但本次将哑铃拉至腰侧后，在顶部停留1秒做单臂平衡控制。比Day2多1组，加重至上次能勉强完成10次的重量。" },
+    { name:"直腿哑铃硬拉", m:"下背 · 腿后束", eq:"哑铃", sets:3, reps:"10-12", w:"10kg/只", rest:65,
+      tips:"与罗马尼亚硬拉类似但膝关节更直（不完全锁死），着重拉伸下背和腘绳肌。下放至哑铃触地或感到拉伸极限即返回。这是加强下背稳定性的动作，控制慢速，背绝对不能弯。" },
+    { name:"面拉式（后束）", m:"三角肌后束 · 上背", eq:"哑铃", sets:3, reps:"12-15", w:"5-6kg/只", rest:35,
+      tips:"俯身约60°较浅，双手持哑铃在胸前。双臂向后上方拉，肘部高度超过手腕，在顶部挤压后束和上背。比俯身飞鸟行程更长，更接近'划船到肩'的轨迹。对改善圆肩和肩痛很有帮助。" },
+    { name:"哑铃集中弯举", m:"肱二头肌（短头+峰）", eq:"哑铃+健身椅", sets:3, reps:"10-12/侧", w:"6-8kg", rest:35,
+      tips:"坐于健身椅，双脚宽于肩，持哑铃的手肘抵在同侧大腿内侧。仅小臂运动弯举到肩，顶点充分收缩1秒，缓慢放下。这种单臂孤立做对塑造二头肌'峰'效果显著。每组换边。" },
+    { name:"哑铃腕弯举", m:"前臂屈肌", eq:"哑铃", sets:2, reps:"15-20", w:"5kg", rest:20,
+      tips:"坐姿前臂放在大腿上，手腕悬出膝盖，手持哑铃掌心朝上。仅手腕卷动哑铃上下，做到小臂酸胀。这件小肌群常被忽略，但对握力进步和二头训练量有帮助。" },
+  ],
+  6: [
+    { name:"哑铃高脚杯深蹲", m:"股四头肌 · 臀", eq:"哑铃", sets:4, reps:"12-15", w:"15kg（双手抱一只）", rest:65,
+      tips:"比Day3加重，能做15次的重量。注意仍保持动作标准：胸口不塌、膝盖跟脚尖方向一致。深蹲做到大腿与地面平行或更低，臀部在底端'坐'回发力起身。增加离心控制：下放用3秒。" },
+    { name:"哑铃箭步蹲（向后）", m:"股四头肌 · 臀", eq:"哑铃", sets:3, reps:"10-12/腿", w:"8kg/只", rest:50,
+      tips:"双手持哑铃在体侧。前脚固定，后脚向后跨一步，下蹲至前大腿与地面平行，前膝不超过脚尖。后脚向后迈比向前迈对膝盖更友好且臀部参与更多。每腿各做10-12次为1组。" },
+    { name:"站姿提踵", m:"小腿（腓肠肌+比目鱼肌）", eq:"哑铃", sets:4, reps:"15-20", w:"10kg/只", rest:35,
+      tips:"站立双手持哑铃，前脚掌踩在一块书本厚度的垫上（让脚跟悬空）。踮起脚尖到顶停1秒，下放至脚跟低于垫面充分拉伸小腿。注意不要弹跳借力，慢速2秒下放。这是Day6新增的小腿动作。" },
+    { name:"负重卷腹", m:"腹直肌", eq:"哑铃+健身椅", sets:3, reps:"15-20", w:"5-8kg（抱胸口）", rest:35,
+      tips:"仰卧健身椅，双脚勾住凳端或踩地，哑铃抱在胸口。卷起上半身使肩胛离地即可，不用坐起到顶（腹肌全程紧张）。下放控制3秒，避免快速甩出。腰部始终贴凳。" },
+    { name:"俄罗斯转体", m:"腹斜肌 · 核心", eq:"哑铃", sets:3, reps:"20/侧", w:"5kg", rest:20,
+      tips:"坐于地面，双脚抬离地面（初学可踩地），上身后倾约45°。双手握住一只哑铃两端，在身体两侧交替转体触地。注意靠核心旋转而不是甩手臂。每组20次/侧。" },
+  ],
+  7: [],
+};
+
+// ====== Render day tabs ======
+const tabsEl = document.getElementById("dayTabs");
+const contentEl = document.getElementById("content");
+let currentDay = 1;
+
+DAYS.forEach(d => {
+  const el = document.createElement("div");
+  el.className = "day-tab" + (d.rest ? " rest" : "");
+  el.innerHTML = `<div class="day-num">Day ${d.day}</div><div class="day-part">${d.part}</div>`;
+  el.onclick = () => { currentDay = d.day; render(); };
+  tabsEl.appendChild(el);
+});
+
+function render() {
+  // tabs
+  document.querySelectorAll(".day-tab").forEach((t,i) => {
+    t.classList.toggle("active", DAYS[i].day === currentDay);
+  });
+  const d = DAYS.find(x => x.day === currentDay);
+
+  if (d.rest) {
+    contentEl.innerHTML = `
+      <div class="day-title"><span class="badge rest">${d.badge}</span> ${d.title}</div>
+      <div class="rest-card">
+        <div class="icon">😴</div>
+        <h3>休息日 · 主动恢复</h3>
+        <p>肌肉在休息时生长。今天不做力量训练，可做以下轻拉伸促进恢复，每个动作保持20-30秒：</p>
+        <ul class="stretch-list">
+          <li>· 颈部拉伸：左右各20秒，缓慢转头</li>
+          <li>· 胸部拉伸：门框上扶手，身体前倾，20-30秒/侧</li>
+          <li>· 背阔肌拉伸：单手抓高物侧倾，20秒/侧</li>
+          <li>· 股四头肌拉伸：站姿抓脚踝向后拉，20秒/腿</li>
+          <li>· 腿后束拉伸：坐姿直腿前屈，20-30秒</li>
+          <li>· 臀部拉伸：坐姿翘腿前倾，20秒/侧</li>
+          <li>· 肩关节环绕：前后各10圈，缓慢画大圈</li>
+        </ul>
+        <p style="margin-top:18px;font-size:13px">也可散步/慢走20-30分钟，促进全身血液循环与恢复。保证今晚睡眠7-8小时。</p>
+      </div>`;
+    return;
+  }
+
+  let html = `<div class="day-title"><span class="badge">${d.badge}</span> ${d.title}</div>`;
+  const exs = EX[currentDay] || [];
+  exs.forEach((ex, idx) => {
+    const saveKey = `d${currentDay}_ex${idx}`;
+    html += `
+    <div class="exercise-card">
+      <div class="ex-header">
+        <div>
+          <div class="ex-name">${idx+1}. ${ex.name}</div>
+          <div class="ex-muscle">${ex.m}</div>
+        </div>
+      </div>
+      <div class="ex-meta">
+        <span>器械：${ex.eq}</span>
+        <span>${ex.sets} 组 × ${ex.reps}</span>
+        <span class="weight">建议：${ex.w}</span>
+        <span>休息 ${ex.rest}s</span>
+      </div>
+      <div class="ex-tips"><span class="tip-label">动作要点：</span>${ex.tips}</div>
+      <div class="ex-sets" id="sets-${saveKey}">`;
+    for (let s = 0; s < ex.sets; s++) {
+      html += `
+        <div class="set-row">
+          <div class="set-check" data-key="${saveKey}_s${s}" data-set="${s}">✓</div>
+          <div class="set-info">第 ${s+1} 组 · <strong>${ex.reps}</strong></div>
+          <button class="start-timer-btn" data-rest="${ex.rest}">休息 ${ex.rest}s</button>
+        </div>`;
+    }
+    html += `</div></div>`;
+  });
+  contentEl.innerHTML = html;
+  attachHandlers();
+}
+
+// ====== Handlers ======
+function attachHandlers() {
+  // checkbox toggle
+  document.querySelectorAll(".set-check").forEach(el => {
+    const key = el.dataset.key;
+    if (localStorage.getItem(key) === "1") el.classList.add("done");
+    el.onclick = () => {
+      const done = !el.classList.contains("done");
+      el.classList.toggle("done", done);
+      localStorage.setItem(key, done ? "1" : "0");
+    };
+  });
+  // timer buttons
+  document.querySelectorAll(".start-timer-btn").forEach(el => {
+    el.onclick = () => startTimer(parseInt(el.dataset.rest) || 60);
+  });
+}
+
+// ====== Timer ======
+const overlay = document.getElementById("timerOverlay");
+const display = document.getElementById("timerDisplay");
+const circle = document.getElementById("timerCircle");
+const RADIUS = 92;
+const CIRC = 2 * Math.PI * RADIUS;
+circle.setAttribute("stroke-dasharray", CIRC);
+circle.setAttribute("stroke-dashoffset", 0);
+
+let timerSec = 90, timerTotal = 90, timerInterval = null;
+
+function fmt(s) {
+  const m = Math.floor(s/60), r = s % 60;
+  return `${String(m).padStart(2,"0")}:${String(r).padStart(2,"0")}`;
+}
+
+function updateTimer() {
+  display.textContent = fmt(timerSec);
+  const pct = timerSec / timerTotal;
+  circle.setAttribute("stroke-dashoffset", CIRC * (1 - pct));
+  if (timerSec <= 0) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    // vibrate if supported
+    if (navigator.vibrate) navigator.vibrate([200,100,200]);
+  }
+}
+
+function startTimer(sec) {
+  timerSec = sec; timerTotal = sec;
+  overlay.classList.add("show");
+  clearInterval(timerInterval);
+  updateTimer();
+  timerInterval = setInterval(() => { timerSec--; updateTimer(); }, 1000);
+}
+
+document.getElementById("btnAdd30").onclick = () => { timerSec += 30; timerTotal += 30; updateTimer(); };
+document.getElementById("btnSkip").onclick = () => {
+  clearInterval(timerInterval); timerInterval = null;
+  overlay.classList.remove("show");
+};
+document.getElementById("btnClose").onclick = () => {
+  clearInterval(timerInterval); timerInterval = null;
+  overlay.classList.remove("show");
+};
+
+// ====== Weight Tracker ======
+const HEIGHT = 1.85;
+const wtDateEl = document.getElementById("wtDate");
+const wtInputEl = document.getElementById("wtInput");
+const wtAddBtn = document.getElementById("wtAddBtn");
+const wtClearBtn = document.getElementById("wtClearBtn");
+const wtChart = document.getElementById("wtChart");
+const wtEmpty = document.getElementById("wtEmpty");
+const currentWeightDisplay = document.getElementById("currentWeightDisplay");
+const bmiDisplay = document.getElementById("bmiDisplay");
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+wtDateEl.value = todayStr();
+
+function getWeights() {
+  try { return JSON.parse(localStorage.getItem("weightLog") || "[]"); } catch(e) { return []; }
+}
+function saveWeights(arr) { localStorage.setItem("weightLog", JSON.stringify(arr)); }
+
+function updateProfile(weight) {
+  if (!weight) return;
+  currentWeightDisplay.textContent = weight + " kg";
+  const bmi = weight / (HEIGHT * HEIGHT);
+  let color = "var(--yellow)";
+  if (bmi >= 25) color = "var(--red)";
+  else if (bmi >= 18.5) color = "var(--green)";
+  bmiDisplay.textContent = bmi.toFixed(1);
+  bmiDisplay.style.color = color;
+}
+
+function addWeight() {
+  const date = wtDateEl.value;
+  const w = parseFloat(wtInputEl.value);
+  if (!date || !w || w <= 0) { if (navigator.vibrate) navigator.vibrate(100); return; }
+  const log = getWeights();
+  const existing = log.findIndex(e => e.date === date);
+  if (existing >= 0) log[existing].w = w;
+  else { log.push({ date, w }); log.sort((a,b) => a.date < b.date ? -1 : 1); }
+  saveWeights(log);
+  wtInputEl.value = "";
+  renderChart();
+}
+
+function renderChart() {
+  const log = getWeights();
+  if (log.length === 0) {
+    wtChart.style.display = "none";
+    wtEmpty.style.display = "block";
+    return;
+  }
+  wtChart.style.display = "block";
+  wtEmpty.style.display = "none";
+  updateProfile(log[log.length-1].w);
+
+  const W = 900, H = 220, pad = { l: 50, r: 20, t: 20, b: 40 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+
+  const ws = log.map(e => e.w);
+  let wMin = Math.min(...ws), wMax = Math.max(...ws);
+  if (wMin === wMax) { wMin -= 1; wMax += 1; }
+  const range = wMax - wMin;
+  wMin -= range * 0.15; wMax += range * 0.15;
+
+  const xOf = i => pad.l + (log.length === 1 ? cw/2 : (i / (log.length-1)) * cw);
+  const yOf = w => pad.t + (1 - (w - wMin) / (wMax - wMin)) * ch;
+
+  let svg = "";
+  // grid lines (4 horizontal)
+  for (let g = 0; g <= 4; g++) {
+    const y = pad.t + (g / 4) * ch;
+    const wVal = wMax - (g/4) * (wMax - wMin);
+    svg += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#2d3540" stroke-width="1" stroke-dasharray="3,4"/>`;
+    svg += `<text x="${pad.l-8}" y="${y+4}" fill="#9ca6b0" font-size="11" text-anchor="end">${wVal.toFixed(1)}</text>`;
+  }
+  // target line at 18.5 BMI weight (= 63.4kg)
+  const targetW = 18.5 * HEIGHT * HEIGHT;
+  if (targetW >= wMin && targetW <= wMax) {
+    const ty = yOf(targetW);
+    svg += `<line x1="${pad.l}" y1="${ty}" x2="${W-pad.r}" y2="${ty}" stroke="#51cf66" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.7"/>`;
+    svg += `<text x="${W-pad.r}" y="${ty-5}" fill="#51cf66" font-size="10" text-anchor="end">健康 ${targetW.toFixed(1)}kg</text>`;
+  }
+  // line path
+  let path = "";
+  log.forEach((e, i) => { path += (i === 0 ? "M" : "L") + xOf(i) + " " + yOf(e.w); });
+  svg += `<path d="${path}" fill="none" stroke="#ff6b35" stroke-width="2.5"/>`;
+  // area under
+  let area = path + ` L ${xOf(log.length-1)} ${pad.t+ch} L ${xOf(0)} ${pad.t+ch} Z`;
+  svg += `<path d="${area}" fill="url(#wtGrad)" opacity="0.2"/>`;
+  // gradient def
+  svg = `<defs><linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff6b35"/><stop offset="100%" stop-color="#ff6b35" stop-opacity="0"/></linearGradient></defs>` + svg;
+  // points
+  log.forEach((e, i) => {
+    const x = xOf(i), y = yOf(e.w);
+    svg += `<circle cx="${x}" cy="${y}" r="4" fill="#ff6b35" stroke="#0f1216" stroke-width="2"/>`;
+    if (log.length <= 14) {
+      svg += `<title>${e.date}: ${e.w}kg</title>`;
+      const label = e.date.slice(5);
+      svg += `<text x="${x}" y="${H-pad.b+18}" fill="#9ca6b0" font-size="10" text-anchor="middle">${label}</text>`;
+      svg += `<text x="${x}" y="${y-10}" fill="#e8edf2" font-size="11" text-anchor="middle">${e.w}</text>`;
+    }
+  });
+  wtChart.innerHTML = svg;
+}
+
+wtAddBtn.onclick = addWeight;
+wtInputEl.addEventListener("keydown", e => { if (e.key === "Enter") addWeight(); });
+wtClearBtn.onclick = () => {
+  if (confirm("确定清空所有体重记录吗？")) { localStorage.removeItem("weightLog"); renderChart(); }
+};
+
+renderChart();
+// refresh chart when window focused (in case user records elsewhere)
+
+// initial render
+render();
+</script>
+</body>
+</html>
